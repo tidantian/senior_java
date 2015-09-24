@@ -1,7 +1,6 @@
 package com.framework.rpc.thrift;
 
 import java.io.IOException;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -14,37 +13,18 @@ import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.transport.TFramedTransport;
-import org.apache.thrift.transport.TNonblockingServerSocket;
 import org.apache.thrift.transport.TNonblockingSocket;
-import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
 public class TClient implements Runnable {
-	private boolean isReadNonBlocking = false;
 	private static AtomicInteger counter = new AtomicInteger();
 
 	public void startClient() {
 		TTransport transport = null;
 		try {
-			// System.out.println("thrift client connext server at 1234 port ");
-			switch (Configuration.getTransportType().intValue) {
-			case 0: // socket
-				transport = new TSocket(Configuration.getHost(),
-						Configuration.getPort(), 30000);
-				break;
-			case 1: // Frame
-				transport = new TFramedTransport(new TSocket(
-						Configuration.getHost(), Configuration.getPort()));
-				break;
-			case 2: // non-blocking
-				transport = new TNonblockingSocket(Configuration.getHost(),
-						Configuration.getPort());
-				break;
-			default:
-
-			}
+			transport = createTransport(transport);
 
 			TProtocol protocol = null;
 			TProtocolFactory protocolFactory = null;
@@ -65,6 +45,7 @@ public class TClient implements Runnable {
 			default:
 
 			}
+			
 			if (Configuration.getServerType() == Configuration.ServerType.NonBlocking) {
 				TAsyncClientManager clientManager = new TAsyncClientManager();
 				Hello.AsyncClient client = new Hello.AsyncClient(
@@ -72,12 +53,11 @@ public class TClient implements Runnable {
 						(TNonblockingSocket) transport);
 				MethodCallback callBack = new MethodCallback();
 
-				client.helloString("panguso", callBack);
+				client.helloString("non-blocking", callBack);
 				counter.incrementAndGet();
 				// System.out.println("thrift client close connextion");
-				// transport.close();
-				if (transport.isOpen())
-					transport.close();
+				//if (transport.isOpen())
+					//transport.close();
 			} else {
 				Hello.Client client = new Hello.Client(protocol);
 				transport.open();
@@ -89,6 +69,7 @@ public class TClient implements Runnable {
 				transport.close();
 				// System.out.println("thrift client close connextion");
 			}
+			
 		} catch (TTransportException e) {
 			e.printStackTrace();
 		} catch (TException e) {
@@ -96,6 +77,27 @@ public class TClient implements Runnable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private TTransport createTransport(TTransport transport) throws IOException {
+		// System.out.println("thrift client connext server at 1234 port ");
+		switch (Configuration.getTransportType().intValue) {
+		case 0: // socket
+			transport = new TSocket(Configuration.getHost(),
+					Configuration.getPort(), 10000);
+			break;
+		case 1: // Frame
+			transport = new TFramedTransport(new TSocket(
+					Configuration.getHost(), Configuration.getPort()));
+			break;
+		case 2: // non-blocking
+			transport = new TNonblockingSocket(Configuration.getHost(),
+					Configuration.getPort());
+			break;
+		default:
+
+		}
+		return transport;
 	}
 
 	/**
@@ -108,32 +110,36 @@ public class TClient implements Runnable {
 		// client.startClient();
 		long startTime = System.currentTimeMillis();
 		ExecutorService executor = Executors.newFixedThreadPool(200);
-		for (int i = 0; i <= 1; i++) {
-			TClient client = new TClient();
-			executor.execute(client);
+		TClient [] client = new TClient[10];
+		for (int i = 0; i < 1; i++) {
+			client[i]= new TClient();
+			executor.execute(client[i]);
 		}
 		while (true) {
 			if (counter.get() == 1) {
 				break;
 			}
 		}
+		try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		executor.shutdown();
 		long duringTime = System.currentTimeMillis() - startTime;
 		System.out.print(duringTime);
-		// executor.
 		// System.out.println("thrift client end ");
 
 	}
 
-	public class MethodCallback implements AsyncMethodCallback {
+	public class MethodCallback implements AsyncMethodCallback<Object> {
 		Object response = null;
 
 		public Object getResult() {
-			// 返回结果值
 			return this.response;
 		}
 
-		// 处理服务返回的结果值
 		@Override
 		public void onComplete(Object response) {
 			this.response = response;
@@ -143,8 +149,6 @@ public class TClient implements Runnable {
 
 		@Override
 		public void onError(Exception arg0) {
-			// TODO Auto-generated method stub
-
 		}
 	}
 

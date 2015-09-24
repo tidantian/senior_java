@@ -11,7 +11,7 @@ public class HelloImpl implements Hello.Iface {
 		counter++;
 		StringBuffer rsp= new StringBuffer();
 		rsp.append("Hello Baby, you access times: " + counter + "; you say "+word);
-		//System.out.println(rsp.toString());
+		System.out.println(rsp.toString());
 		try {
 			Thread.sleep(50);
 		} catch (InterruptedException e) {
