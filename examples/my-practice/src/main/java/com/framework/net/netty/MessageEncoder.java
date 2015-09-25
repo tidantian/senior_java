@@ -10,15 +10,15 @@ public class MessageEncoder extends MessageToByteEncoder<Message> {
 
 	@Override
 	protected void encode(ChannelHandlerContext ctx, Message msg,
-			ByteBuf bytebuf) throws Exception {
-		bytebuf.writeInt(msg.getType());
+			ByteBuf out) throws Exception {
+		out.writeInt(msg.getType());
 		if (msg.getType() != 0) {
 			byte[] person = ObjectSerialTool.writeObject(msg.getBody());
-			bytebuf.writeInt(person.length + 2);
-			bytebuf.writeBytes(person);
+			out.writeInt(person.length + 2);
+			out.writeBytes(person);
 		} else {
-			bytebuf.writeInt(((String) msg.getBody()).length() + 2);
-			bytebuf.writeBytes(((String) msg.getBody()).getBytes());
+			out.writeInt(((String) msg.getBody()).length() + 2);
+			out.writeBytes(((String) msg.getBody()).getBytes());
 		}
 
 	}
