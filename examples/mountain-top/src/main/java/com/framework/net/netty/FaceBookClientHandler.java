@@ -5,8 +5,6 @@ import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.buffer.ByteBuf;
 
-;
-
 public class FaceBookClientHandler extends ChannelHandlerAdapter {
     private int counter;
 

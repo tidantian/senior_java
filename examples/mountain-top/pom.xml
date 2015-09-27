@@ -10,10 +10,10 @@
 	</parent>
 
 	<groupId>com.senior.designer</groupId>
-	<artifactId>my-practice</artifactId>
+	<artifactId>mountain-top</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>war</packaging>
-	<name>my-practice Maven Webapp</name>
+	<name>mountain-top Maven Webapp</name>
 	<url>http://maven.apache.org</url>
 
 	<dependencies>
