@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd
+           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd">
+
+	<bean id="holder" class="com.framework.spring.aop.MeetingHolder" />
+	<bean id="logger" class="com.framework.spring.aop.MeetingLogger" />
+
+	<bean id="meeting" class="com.framework.spring.aop.Meeting">
+		<constructor-arg type="String" value="Java" />
+		<constructor-arg type="String" value="Tidan" />
+	</bean>
+
+	<aop:config proxy-target-class="true">
+		<aop:aspect ref="holder">
+			<aop:pointcut id="meeting_start"
+				expression="execution(* com.framework.spring.aop.Meeting.start(..))" />
+			<aop:pointcut id="meeting_firstpart"
+				expression="execution(* com.framework.spring.aop.Meeting.firstPart(..))" />
+			<aop:pointcut id="meeting_rest"
+				expression="execution(* com.framework.spring.aop.Meeting.rest(..))" />
+			<aop:pointcut id="meeting_secordpart"
+				expression="execution(* com.framework.spring.aop.Meeting.secordPart(..))" />
+
+			<aop:before pointcut-ref="meeting_start" method="sayHi" />
+			<aop:after-returning pointcut-ref="meeting_rest"
+				method="sayThanks" />
+			<aop:after-returning pointcut-ref="meeting_secordpart"
+				method="sayGoodbye" />
+		</aop:aspect>
+		
+		<aop:aspect ref="logger">
+			<aop:pointcut id="meeting_all"
+				expression="execution(* com.framework.spring.aop.Meeting.*(..))" />
+
+			<aop:before pointcut-ref="meeting_all" method="log" />
+		</aop:aspect>
+	</aop:config>
+
+</beans>
